@@ -14,6 +14,7 @@ services:
     pull_policy: always
     environment:
       - DB_SERVER=db
+      - DISABLE_AUTHENTICATION=true
     depends_on:
       - db
     # Uncomment the next 2 lines to serve local source
@@ -25,8 +26,10 @@ services:
       - 127.0.0.1:4280:80
     restart: unless-stopped
     healthcheck:
-      # Follow redirects so the check succeeds even when the app sends users to the login page
-      test: ["CMD-SHELL", "curl -fsL http://localhost | grep -q 'Damn Vulnerable Web Application'"]
+
+      # Follow redirects and only require a 200 OK so the check works for any landing page
+      test: ["CMD-SHELL", "curl -fsLo /dev/null -w '%{http_code}' http://localhost | grep -q 200"]
+
       interval: 10s
       timeout: 5s
       retries: 12
