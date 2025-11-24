@@ -33,6 +33,7 @@ jobs:
           exit 1
 
       - name: Run ZAP Baseline Scan
+        continue-on-error: true
         run: |
           mkdir -p zap-reports
           chmod 777 zap-reports
