@@ -1,0 +1,51 @@
+name: OWASP ZAP DAST Scan
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+
+jobs:
+  zap_scan:
+    name: Run ZAP Baseline Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Start DVWA stack
+        run: docker compose -f compose.yml up -d
+
+      - name: Wait for DVWA to be ready
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:4280 | grep -q "Damn Vulnerable Web Application"; then
+              echo "DVWA is up"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "DVWA did not become ready" >&2
+          docker compose -f compose.yml logs
+          exit 1
+
+      - name: Run ZAP Baseline Scan
+        run: |
+          mkdir -p zap-reports
+          docker run --tty --rm --network host \
+            -v "$(pwd)/zap-reports:/zap/wrk:rw" \
+            ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py -t http://localhost:4280 -r zap-report.html -x zap-report.xml -a
+
+      - name: Upload ZAP reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-reports
+          path: zap-reports
+
+      - name: Shut down DVWA stack
+        if: always()
+        run: docker compose -f compose.yml down -v
