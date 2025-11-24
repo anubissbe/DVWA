@@ -17,12 +17,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Start DVWA stack
-        run: docker compose -f compose.yml up -d
+        run: docker compose -f compose.yml up -d --wait --wait-timeout 240
 
-      - name: Wait for DVWA to be ready
+      - name: Verify DVWA readiness
         run: |
           for i in {1..30}; do
-            if curl -s http://localhost:4280 | grep -q "Damn Vulnerable Web Application"; then
+            if curl -sf http://localhost:4280 | grep -q "Damn Vulnerable Web Application"; then
               echo "DVWA is up"
               exit 0
             fi

@@ -24,6 +24,12 @@ services:
     ports:
       - 127.0.0.1:4280:80
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost | grep -q 'Damn Vulnerable Web Application'"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
   db:
     image: docker.io/library/mariadb:10
@@ -37,3 +43,9 @@ services:
     networks:
       - dvwa
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
