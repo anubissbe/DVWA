@@ -35,7 +35,8 @@ jobs:
       - name: Run ZAP Baseline Scan
         run: |
           mkdir -p zap-reports
-          docker run --tty --rm --network host \
+          chmod 777 zap-reports
+          docker run --tty --rm --network host --user 0 \
             -v "$(pwd)/zap-reports:/zap/wrk:rw" \
             ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py -t http://localhost:4280 -r zap-report.html -x zap-report.xml -a
