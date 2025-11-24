@@ -25,7 +25,8 @@ services:
       - 127.0.0.1:4280:80
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -fs http://localhost | grep -q 'Damn Vulnerable Web Application'"]
+      # Follow redirects so the check succeeds even when the app sends users to the login page
+      test: ["CMD-SHELL", "curl -fsL http://localhost | grep -q 'Damn Vulnerable Web Application'"]
       interval: 10s
       timeout: 5s
       retries: 12
